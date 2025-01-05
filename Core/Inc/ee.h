@@ -39,7 +39,20 @@
 
 #include <stdbool.h>
 #include "main.h"
+ typedef struct {
+ uint8_t byte1;
+ uint8_t byte2;
+ uint8_t byte3;
+ uint8_t byte4;
+ uint32_t byte_byte_byte_byte;
 
+ } FlashDataStruct;
+
+ // Union to access the data as a structure or raw byte array
+ typedef union {
+ FlashDataStruct dataStruct;
+ uint8_t rawData[sizeof(FlashDataStruct)];
+ } FlashDataUnion;
 //################################################################################################################
 bool      ee_init(void);
 bool      ee_format(bool keepRamData);
@@ -50,6 +63,11 @@ bool      ee_commit(void);  //  only use when _EE_USE_RAM_BYTE is enabled
 uint32_t  ee_maxVirtualAddress(void);
 
 //################################################################################################################
+
+
+void flash_memory_init(void);
+void write_flash_data(FlashDataUnion* dataUnion);
+void read_flash_data(FlashDataUnion* dataUnion);
 
 #ifdef __cplusplus
 }

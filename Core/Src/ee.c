@@ -7,6 +7,8 @@
 #define   SECTOR                1
 #define   PAGE_NUM              2
 
+#define   NO_WRITE_TO_FLASH     0
+
 #if defined(STM32F103xB)
 #define   _EE_SIZE              1024
 #define   _EE_ADDR_INUSE        (((uint32_t)0x08000000) | (_EE_SIZE * _EE_USE_FLASH_PAGE_OR_SECTOR))
@@ -415,3 +417,61 @@ uint32_t  ee_maxVirtualAddress(void)
   return (_EE_SIZE);  
 }
 //##########################################################################################################
+
+void printBinary(uint8_t byte) {
+    for (int i = 7; i >= 0; --i) {
+        printf("%d", (byte >> i) & 1);
+    }
+}
+
+// Initialize flash memory
+void flash_memory_init(void) {
+ee_init();
+}
+
+// Write the given union data to flash memory
+void write_flash_data(FlashDataUnion* dataUnion) {
+ee_writeToRam(0, sizeof(FlashDataUnion), dataUnion->rawData);
+
+#if (NO_WRITE_TO_FLASH == 1)
+#else
+	ee_commit();
+#endif
+
+}
+// Read data from flash memory into the union
+void read_flash_data(FlashDataUnion* dataUnion) {
+ee_read(0, sizeof(FlashDataUnion), dataUnion->rawData);
+}
+
+void print_flash_data(FlashDataUnion* dataUnion) {
+    if (dataUnion == NULL) {
+        return;
+    }
+
+    /*uint8_t lowByte = dataUnion->dataStruct.byte_byte_byte_byte & 0xFF;
+    printf("lowByte of byte_byte_byte_byte: ");
+    printBinary(lowByte);
+    printf("\n\r");*/
+
+    printf("FlashDataStruct contents:\n\r");
+        printf("byte1: 0x%02X\n\r", dataUnion->dataStruct.byte1);
+        printf("byte2: 0x%02X\n\r", dataUnion->dataStruct.byte2);
+        printf("byte3: 0x%02X\n\r", dataUnion->dataStruct.byte3);
+        printf("byte4: 0x%02X\n\r", dataUnion->dataStruct.byte4);
+
+        uint8_t *bytePointer = (uint8_t *)&(dataUnion->dataStruct.byte_byte_byte_byte);
+        /*printf("byte_byte_byte_byte: ");
+        for (int i = 0; i < sizeof(dataUnion->dataStruct.byte_byte_byte_byte); i++) {
+            printf("0x%02X ", bytePointer[i]);
+        }*/
+
+        printf("byte_byte_byte_byte (reversed): ");
+           // Печатаем байты в обратном порядке
+           for (int i = sizeof(dataUnion->dataStruct.byte_byte_byte_byte) - 1; i >= 0; i--) {
+               printf("0x%02X ", bytePointer[i]);
+           }
+        printf("\n\r");
+
+
+}
